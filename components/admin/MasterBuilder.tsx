@@ -249,4 +249,81 @@ export default function MasterBuilder({ tripId }: Props) {
                     <p className="text-xs text-slate-400">
                       {userEmoji} {userName}
                       {item.missingFlaggedAt && (
-                        <> · flagged {new Date(item.missingFlaggedAt).toLocaleTimeString([], { hour: '2-digit', minute
+                        <> · flagged {new Date(item.missingFlaggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleResolveFlag(list.id, item.id, list.items)}
+                    className="text-xs font-bold bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-xl transition-all whitespace-nowrap"
+                  >
+                    ✓ Resolved
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Push Protocol */}
+      <div className="bg-white rounded-3xl shadow-lg p-6">
+        <h3 className="font-black text-slate-800 text-lg mb-1">🚀 Push Protocol</h3>
+        <p className="text-slate-500 text-sm mb-4">Select lists to approve and push to kids' devices in real time.</p>
+        <div className="flex flex-wrap gap-3 mb-5">
+          {lists.map(list => {
+            const user = USERS.find(u => u.id === list.userId)
+            if (!user) return null
+            const selected = pushPending.has(list.id)
+            return (
+              <button
+                key={list.id}
+                onClick={() => togglePush(list.id)}
+                disabled={list.status === 'approved' || list.status === 'completed'}
+                className={`
+                  flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-sm transition-all
+                  ${list.status === 'approved' || list.status === 'completed'
+                    ? 'bg-green-50 text-green-600 border border-green-200 cursor-not-allowed'
+                    : selected
+                      ? `${user.color} text-white shadow-md ring-2 ring-offset-2 ring-violet-400`
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}
+                `}
+              >
+                {user.emoji} {user.name}
+                {(list.status === 'approved' || list.status === 'completed') && <span>✅</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        <AnimatePresence>
+          {pushSuccess && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="mb-4 p-3 bg-green-50 border border-green-200 rounded-2xl text-green-700 text-sm font-semibold text-center"
+            >
+              ✅ Lists pushed! Kids can see their packing lists now.
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={handlePush}
+          disabled={!pushPending.size}
+          className={`
+            w-full py-4 rounded-2xl font-black text-base transition-all shadow-lg
+            ${pushPending.size
+              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:shadow-xl active:scale-[0.98]'
+              : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
+          `}
+        >
+          {pushPending.size
+            ? `📤 Push ${pushPending.size} List${pushPending.size > 1 ? 's' : ''} to Kids`
+            : 'Select lists to push above'}
+        </button>
+      </div>
+    </div>
+  )
+}

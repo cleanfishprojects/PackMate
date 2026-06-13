@@ -94,3 +94,35 @@ export async function incrementPackedQuantity(
 export async function pushListToApproved(listIds: string[]): Promise<void> {
   await Promise.all(listIds.map(id => updateListStatus(id, 'approved')))
 }
+
+// ─── Missing-item flag ────────────────────────────────────────────────────────
+
+export async function toggleMissingFlag(
+  listId: string,
+  itemId: string,
+  items: PackingItem[]
+): Promise<void> {
+  const updated = items.map(item =>
+    item.id === itemId
+      ? {
+          ...item,
+          missing: !item.missing,
+          missingFlaggedAt: !item.missing ? new Date().toISOString() : undefined,
+        }
+      : item
+  )
+  await updateListItems(listId, updated)
+}
+
+export async function resolveMissingFlag(
+  listId: string,
+  itemId: string,
+  items: PackingItem[]
+): Promise<void> {
+  const updated = items.map(item =>
+    item.id === itemId
+      ? { ...item, missing: false, missingFlaggedAt: undefined }
+      : item
+  )
+  await updateListItems(listId, updated)
+}
