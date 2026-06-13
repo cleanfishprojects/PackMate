@@ -55,7 +55,7 @@ export default function TripCreator({ createdBy, onTripCreated }: Props) {
         endDate,
         activities,
         members,
-        weatherForecast: forecast,
+        ...(forecast ? { weatherForecast: forecast } : {}),
         createdBy,
       })
 
