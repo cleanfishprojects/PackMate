@@ -60,14 +60,13 @@ export default function TripCreator({ createdBy, onTripCreated }: Props) {
       })
 
       // 3. Generate packing lists for each member
-      const injectedItems = forecast?.injectedItems ?? []
       await Promise.all(
         members.map(userId =>
           createPackingList({
             tripId,
             userId,
             status: 'draft',
-            items: buildDefaultItems(userId, injectedItems),
+            items: buildDefaultItems(userId, activities),
           })
         )
       )

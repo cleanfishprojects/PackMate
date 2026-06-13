@@ -1,69 +1,137 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { USERS } from '@/types'
+import { subscribeToAllTrips } from '@/lib/firestore'
+import { USERS, type Trip } from '@/types'
 
-export default function ProfileSelector() {
+export default function Home() {
   const router = useRouter()
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const unsub = subscribeToAllTrips(t => {
+      setTrips(t)
+      setLoading(false)
+    })
+    return unsub
+  }, [])
+
+  function tripStatus(trip: Trip) {
+    const now = new Date()
+    const start = new Date(trip.startDate)
+    const end = new Date(trip.endDate)
+    if (now < start) return 'upcoming'
+    if (now > end) return 'past'
+    return 'in progress'
+  }
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen bg-slate-50 p-6 max-w-lg mx-auto">
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -30 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center mb-12"
+        className="flex items-center justify-between mb-8 pt-4"
       >
-        <div className="text-7xl mb-4">🧳</div>
-        <h1 className="text-5xl font-black text-slate-800 tracking-tight">PackMate</h1>
-        <p className="text-slate-500 mt-2 text-lg font-medium">Who's packing today?</p>
+        <div>
+          <h1 className="text-3xl font-black text-slate-800">🧳 PackMate</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Family packing, organized</p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={() => router.push('/trips/new')}
+          className="bg-violet-600 text-white font-bold text-sm px-4 py-2.5 rounded-2xl shadow-lg hover:bg-violet-700 transition-colors"
+        >
+          + New Trip
+        </motion.button>
       </motion.div>
 
-      {/* Profile Grid */}
-      <div className="grid grid-cols-2 gap-5 w-full max-w-md">
-        {USERS.map((user, i) => (
-          <motion.button
-            key={user.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.1 + 0.2, type: 'spring', stiffness: 200 }}
-            whileHover={{ scale: 1.05, y: -4 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => router.push(`/${user.id}`)}
-            className={`
-              relative flex flex-col items-center justify-center
-              p-8 rounded-3xl shadow-lg cursor-pointer
-              ${user.color} text-white
-              transition-shadow hover:shadow-xl
-            `}
+      {/* Trip list */}
+      {loading ? (
+        <div className="text-center py-20 text-slate-400">
+          <div className="text-4xl mb-3 animate-bounce">✈️</div>
+          <p>Loading trips...</p>
+        </div>
+      ) : trips.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-20"
+        >
+          <div className="text-6xl mb-4">🗺️</div>
+          <h2 className="text-xl font-bold text-slate-700 mb-2">No trips yet</h2>
+          <p className="text-slate-500 mb-6">Create your first trip to get started.</p>
+          <button
+            onClick={() => router.push('/trips/new')}
+            className="bg-violet-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg hover:bg-violet-700 transition-colors"
           >
-            {/* Role badge */}
-            {user.role === 'admin' && (
-              <span className="absolute top-3 right-3 text-xs font-bold bg-white/25 rounded-full px-2 py-0.5">
-                Admin
-              </span>
-            )}
-            <span className="text-5xl mb-3">{user.emoji}</span>
-            <span className="text-xl font-bold">{user.name}</span>
-            {user.role === 'child' && (
-              <span className="text-xs mt-1 opacity-80">
-                {user.id === 'luke' ? 'Age 10' : 'Age 7'}
-              </span>
-            )}
-          </motion.button>
-        ))}
-      </div>
+            + Create a Trip
+          </button>
+        </motion.div>
+      ) : (
+        <div className="space-y-4">
+          {trips.map((trip, i) => {
+            const status = tripStatus(trip)
+            const members = USERS.filter(u => trip.members.includes(u.id))
+            return (
+              <motion.button
+                key={trip.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(`/trips/${trip.id}`)}
+                className="w-full bg-white rounded-3xl shadow-md p-5 text-left hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-800">{trip.destination}</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      {formatDate(trip.startDate)} – {formatDate(trip.endDate)}
+                    </p>
+                  </div>
+                  <span className={`
+                    text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide whitespace-nowrap
+                    ${status === 'in progress' ? 'bg-green-100 text-green-700' :
+                      status === 'upcoming'    ? 'bg-violet-100 text-violet-700' :
+                                                 'bg-slate-100 text-slate-500'}
+                  `}>
+                    {status}
+                  </span>
+                </div>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mt-10 text-slate-400 text-sm"
-      >
-        Tap your name to get started ✈️
-      </motion.p>
+                {/* Member chips */}
+                <div className="flex gap-2 flex-wrap">
+                  {members.map(u => (
+                    <span
+                      key={u.id}
+                      className={`text-xs font-bold px-3 py-1 rounded-full text-white ${u.color}`}
+                    >
+                      {u.name}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Activities */}
+                {trip.activities.length > 0 && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    {trip.activities.join(' · ')}
+                  </p>
+                )}
+              </motion.button>
+            )
+          })}
+        </div>
+      )}
     </main>
   )
 }

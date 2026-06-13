@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, setDoc, updateDoc, onSnapshot,
-  query, where,
+  query, where, orderBy,
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from './firebase'
@@ -12,6 +12,13 @@ export async function createTrip(trip: Omit<Trip, 'id' | 'createdAt'>): Promise<
   const ref = doc(collection(db, 'trips'))
   await setDoc(ref, { ...trip, id: ref.id, createdAt: new Date().toISOString() })
   return ref.id
+}
+
+export function subscribeToAllTrips(cb: (trips: Trip[]) => void): Unsubscribe {
+  const q = query(collection(db, 'trips'), orderBy('startDate', 'asc'))
+  return onSnapshot(q, snap =>
+    cb(snap.docs.map(d => d.data() as Trip))
+  )
 }
 
 export async function getTrip(tripId: string): Promise<Trip | null> {
