@@ -100,4 +100,7 @@ export const ACTIVITY_OPTIONS = [
   { id: 'beach',   label: 'Beach',   emoji: '🏖️' },
   { id: 'swimming',label: 'Swimming',emoji: '🏊' },
   { id: 'skiing',  label: 'Skiing',  emoji: '⛷️' },
-  { id: 'hiking',  label: 'Hiking',  emoji: '🥾' }
+  { id: 'hiking',  label: 'Hiking',  emoji: '🥾' },
+  { id: 'casual',  label: 'Casual',  emoji: '🏙️' },
+  { id: 'formal',  label: 'Formal',  emoji: '👔' },
+]
