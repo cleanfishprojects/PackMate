@@ -6,7 +6,7 @@ import { ACTIVITY_OPTIONS, USERS, type UserId } from '@/types'
 import { fetchWeatherForecast } from '@/lib/weatherApi'
 import { createTrip, createPackingList } from '@/lib/firestore'
 import { buildDefaultItems } from '@/lib/defaultItems'
-import type { Trip, WeatherForecast } from '@/types'
+import type { WeatherForecast } from '@/types'
 
 interface Props {
   createdBy: UserId

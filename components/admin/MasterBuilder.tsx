@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { subscribeToTripLists, updateListItems, pushListToApproved, resolveMissingFlag } from '@/lib/firestore'
 import { USERS, type PackingList, type PackingItem, type UserId, type ItemCategory, type ViewMode } from '@/types'
@@ -16,16 +16,6 @@ const CATEGORY_LABELS: Record<ItemCategory, string> = {
   'day-of':   '📋 Day-Of',
 }
 
-function getDayLabels(start: string, end: string): string[] {
-  const days: string[] = []
-  const cur = new Date(start)
-  const fin = new Date(end)
-  while (cur <= fin) {
-    days.push(cur.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }))
-    cur.setDate(cur.getDate() + 1)
-  }
-  return days
-}
 
 export default function MasterBuilder({ tripId }: Props) {
   const [lists, setLists]         = useState<PackingList[]>([])

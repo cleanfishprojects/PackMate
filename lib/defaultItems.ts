@@ -1,4 +1,4 @@
-import type { PackingItem, UserId } from '@/types'
+import type { PackingItem } from '@/types'
 
 // Generate a UUID-ish id
 function uid() {
@@ -29,7 +29,7 @@ const CARRY_ON: Omit<PackingItem, 'id'>[] = [
   { name: 'Water Bottle',    category: 'carry-on',   targetQuantity: 1, packedQuantity: 0, visualIcon: '💧' },
 ]
 
-export function buildDefaultItems(userId: UserId, extraNames: string[]): PackingItem[] {
+export function buildDefaultItems(_userId: string, extraNames: string[]): PackingItem[] {
   const base = [...BASE_CLOTHING, ...BASE_TOILETRIES, ...CARRY_ON]
 
   // Extra injected items (from weather / activity)

@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, setDoc, updateDoc, onSnapshot,
-  query, where, serverTimestamp, Timestamp,
+  query, where,
   type Unsubscribe,
 } from 'firebase/firestore'
 import { db } from './firebase'
